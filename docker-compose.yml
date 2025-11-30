@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./webapp
+    container_name: ctf_xxe_app
+    ports:
+      - "8098:80"
+    networks:
+      - ctf_xxe_network
+    volumes:
+      - ./webapp/www:/var/www/html/  # Keep this for live code editing
+    depends_on:
+      db:
+        # This is the key: The web container will not start until the DB
+        # container reports that it is healthy and ready.
+        condition: service_healthy
+
+  db:
+    image: mysql:8.0
+    container_name: ctf_xxe_db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: ctf_lab
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    networks:
+      - ctf_xxe_network
+    volumes:
+      - db_data:/var/lib/mysql
+    # This healthcheck ensures the database is fully initialized before
+    # other services are allowed to connect.
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  ctf_xxe_network:
+    driver: bridge
+
+volumes:
+  db_data:
